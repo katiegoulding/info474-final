@@ -2,9 +2,10 @@
 // blank js file to be filled with D3 vizzes
 (function() {
     let data = "no data";
+    let allOrgData = "";
     let svgContainer = "";
     let mapFunc = "";
-    let org_name="API_Chaya"
+    let org_name="Marys_Place"
 
     window.onload = function() {
         svgContainer = d3.select('body')
@@ -19,10 +20,11 @@
    // make scatter plot with trend line
   function makeScatterPlot(csvData) {
     data = csvData // assign data as global variable 
+    allOrgData = csvData
 
     // get arrays of fertility rate data and life Expectancy data
     let year = data.map((row) => parseFloat(row["year"]));
-    let budget_spent = data.map((row) => parseFloat((row["budget_spent"] * -1)));
+    let budget_spent = data.map((row) => parseFloat((row["budget_spent"])));
 
     // find data limits
     let axesLimits = findMinMax(year, budget_spent);
@@ -39,22 +41,43 @@
   }
 
   function makeDropDown() {
+    var org = allOrgData.map((row)=>row['org_name'])
     var dropDown = d3.select("body")
     .append("select")
 
+    var distinct = (value,index, self) => {
+        return self.indexOf(value)==index
+    }
+
+    var distinctOrg = org.filter(distinct)
+
     var options = dropDown.selectAll('option')
-      .data(data)
+      .data(distinctOrg)
       .enter()
         .append('option')
     
-    options.text(["API_Chaya"], ["Mary's Place"])
-        .attr('value', ["API_Chaya"], ["Mary's Place"])
+    options.text(function (d) { return d })
+        .attr('value', function (d) { return d })
 
     dropDown.on("change", function () {
           var selected = this.value;
           org_name = selected;
           var data_by_org = data.filter(s => s["org_name"] == selected)
-         // svgContainer.selectAll("circle").remove()
+
+          svgContainer.selectAll("circle").remove()
+          svgContainer.selectAll("path").remove()
+          svgContainer.selectAll("text").remove()
+          svgContainer.selectAll("line").remove()
+          
+
+          let year = data_by_org.map((row) => parseFloat(row["year"]));
+          let budget_spent = data_by_org.map((row) => parseFloat((row["budget_spent"])));
+      
+          let axesLimits = findMinMax(year, budget_spent);
+      
+          // draw axes and return scaling + mapping functions
+          mapFunc = drawAxes(axesLimits, "year", "budget_spent");
+
           plotData(mapFunc, data_by_org);
     });
   }
@@ -82,7 +105,8 @@
   // plot all the data points on the SVG
   // and add tooltip functionality
   function plotData(map, thedata) {
-    d3.select("div").remove()
+    //svgContainer.html("")
+   // d3.select("div").remove()
 
     // mapping functions
     let xMap = map.x;
