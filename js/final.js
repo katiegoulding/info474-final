@@ -27,7 +27,7 @@
 
         // SVG container for tooltip viz
         svgBarChart = tooltipDiv.append('svg')
-        .attr('width', 290)
+        .attr('width', 300)
         .attr('height', 300)
         .style("fill", "white");
 
@@ -199,34 +199,65 @@
         let mapFunctions = drawAxes(axesLimits, "bookings_completed", "bookings_attempted", svgBarChart, {min:50, max:250}, {min:50, max:250});
 
         // plot the data using the mapping and scaling functions
-        plotBars(mapFunctions, selected_year);
+        plotBars(mapFunctions);
+        makeLabels(selected_year);
     }
 
-    function plotBars(map, selected_year) {   
+    function plotBars(map) {   
         let xMap = map.x;
         let yMap = map.y;
 
         svgBarChart.selectAll('.dot')
         .data(data)
         .enter()
-        .append('rect')
-        .attr('x', (d) => xMap(d))
-        .attr('y', yMap)
-        .attr('width', 3)
-        .attr('height', (d) => 250 - yMap(d))
-        .attr("fill", "green")
+        .append('circle')
+          .attr('cx', xMap)
+          .attr('cy', yMap)
+          .attr('r', (d) => 3)
+          .attr('fill', "blue")
+          .style("opacity", .5);
+        
+        // svgBarChart.selectAll('.dot')
+        // .data(data)
+        // .enter()
+        // .append('rect')
+        // .attr('x', (d) => xMap(d))
+        // .attr('y', yMap)
+        // .attr('width', 3)
+        // .attr('height', (d) => 250 - yMap(d))
+        // .attr("fill", "green")
     
 
         
-        svgBarChart.append("text")
-        .attr('transform', 'translate(10, 175)rotate(-90)')
-        .text("count")
+        // svgBarChart.append("text")
+        // .attr('transform', 'translate(10, 175)rotate(-90)')
+        // .text("count")
 
-        svgBarChart.append("text")
-        .attr("x", 120)
-        .attr("y", 300)
-        .text("bookings") 
+        // svgBarChart.append("text")
+        // .attr("x", 120)
+        // .attr("y", 300)
+        // .text("bookings") 
     }
+
+// make title and axes labels for tooltip chart
+  function makeLabels(year) {
+    svgBarChart.append('text')
+      .attr('x', 50)
+      .attr('y', 30)
+      .style('font-size', '8pt')
+      .text(year);
+
+      svgBarChart.append('text')
+      .attr('x', 50)
+      .attr('y', 285)
+      .style('font-size', '8pt')
+      .text("bookings comp");
+
+      svgBarChart.append('text')
+      .attr('transform', 'translate(15, 200)rotate(-90)')
+      .style('font-size', '8pt')
+      .text('bookings att');
+  }
 
 // functions used in both vizzes
 // draw the axes and ticks
