@@ -27,7 +27,7 @@
 
         // SVG container for tooltip viz
         svgBarChart = tooltipDiv.append('svg')
-        .attr('width', 300)
+        .attr('width', 400)
         .attr('height', 300)
         .style("fill", "white");
 
@@ -104,6 +104,10 @@
     // plot all the data points on the SVG
     // and add tooltip functionality
     function plotData(map, data) {
+        
+        // draw title and axes labels
+        makeLabels();
+
         // mapping functions
         let xMap = map.x;
         let yMap = map.y;
@@ -138,22 +142,22 @@
             .attr('fill', "#4286f4")
             .style("opacity", .8)
             // add tooltip functionality to points
-            .on("mouseover", (d) => {
+            .on("click", (d) => {
+                console.log("in OnClick")
                 tooltipDiv.transition()
-                .duration(100)
+                // .duration(100)
                 .style("opacity", .9);
                 tooltipDiv.style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 28) + "px")
                     .append(makeBarChart(d.year));
             })
-            .on("mouseout", (d) => {
-                tooltipDiv.transition()
-                .duration(200)
-                .style("opacity", 0)
-            });
 
-            // draw title and axes labels
-            makeLabels();
+            // .on("mouseout", (d) => {
+            //     tooltipDiv.transition()
+            //     .duration(200)
+            //     .style("opacity", 0)
+            // });
+
     }
 
     // make title and axes labels
@@ -178,29 +182,28 @@
 
     // Make TOOLTIP graph
     function makeBarChart(selected_year) {
+        makeTooltipLabels(selected_year);
+
         let year_data = data.filter(function(d){return d.year == selected_year;})
 
         // get an array of bookings completed and an array of bookings attempted
         let bookingsCompleted = year_data.map((row) => parseInt(row["bookings_completed"]));
         let bookingsAttempted = year_data.map((row) => parseInt(row["bookings_attempted"]));
 
-        svgBarChart.selectAll("rect").remove()
         svgBarChart.selectAll("text").remove()
         svgBarChart.selectAll("line").remove()
 
         svgBarChart.append("text")
-        .attr("x", 10)
+        .attr("x", 100)
         .attr("y", 10)
         .text(selected_year + " bookings")
 
         let axesLimits = findMinMax(bookingsCompleted, bookingsAttempted);
-
         // draw axes with ticks and return mapping and scaling functions
-        let mapFunctions = drawAxes(axesLimits, "bookings_completed", "bookings_attempted", svgBarChart, {min:50, max:250}, {min:50, max:250});
+        let mapFunctions = drawAxes(axesLimits, "bookings_completed", "bookings_attempted", svgBarChart, {min:50, max:350}, {min:50, max:250});
 
         // plot the data using the mapping and scaling functions
         plotBars(mapFunctions);
-        makeLabels(selected_year);
     }
 
     function plotBars(map) {   
@@ -214,8 +217,8 @@
           .attr('cx', xMap)
           .attr('cy', yMap)
           .attr('r', (d) => 3)
-          .attr('fill', "blue")
-          .style("opacity", .5);
+          .attr('fill', "green")
+          .style("opacity", .6);
         
         // svgBarChart.selectAll('.dot')
         // .data(data)
@@ -226,9 +229,7 @@
         // .attr('width', 3)
         // .attr('height', (d) => 250 - yMap(d))
         // .attr("fill", "green")
-    
-
-        
+           
         // svgBarChart.append("text")
         // .attr('transform', 'translate(10, 175)rotate(-90)')
         // .text("count")
@@ -240,16 +241,18 @@
     }
 
 // make title and axes labels for tooltip chart
-  function makeLabels(year) {
+  function makeTooltipLabels(year) {
     svgBarChart.append('text')
-      .attr('x', 50)
-      .attr('y', 30)
+      .attr('x', 100)
+      .attr('y', 10)
       .style('font-size', '8pt')
-      .text(year);
+      .text(year)
+      .style("fill", "red")
+      console.log("in first append");
 
       svgBarChart.append('text')
       .attr('x', 50)
-      .attr('y', 285)
+      .attr('y', 100)
       .style('font-size', '8pt')
       .text("bookings comp");
 
@@ -267,7 +270,7 @@ function drawAxes(limits, x, y, svg, rangeX, rangeY) {
 
     // function to scale x value
     let xScale = d3.scaleLinear()
-      .domain([limits.xMin - .5, limits.xMax + .5]) // give domain buffer room
+      .domain([limits.xMin, limits.xMax]) // give domain buffer room
       .range([rangeX.min, rangeX.max]);
 
     // xMap returns a scaled x value from a row of data 
@@ -284,7 +287,7 @@ function drawAxes(limits, x, y, svg, rangeX, rangeY) {
 
     // function to scale y
     let yScale = d3.scaleLinear()
-      .domain([limits.yMax + 5, limits.yMin - 5]) // give domain buffer
+      .domain([limits.yMax, limits.yMin]) // give domain buffer
       .range([rangeY.min, rangeY.max]);
 
     // yMap returns a scaled y value from a row of data
@@ -305,23 +308,23 @@ function drawAxes(limits, x, y, svg, rangeX, rangeY) {
     };
 }
 
-    // find min and max for arrays of x and y
-    function findMinMax(x, y) {
+// find min and max for arrays of x and y
+function findMinMax(x, y) {
 
-        // get min/max x values
-        let xMin = d3.min(x);
-        let xMax = d3.max(x);
+    // get min/max x values
+    let xMin = d3.min(x);
+    let xMax = d3.max(x);
 
-        // get min/max y values
-        let yMin = d3.min(y);
-        let yMax = d3.max(y);
+    // get min/max y values
+    let yMin = d3.min(y);
+    let yMax = d3.max(y);
 
-        // return formatted min/max data as an object
-        return {
-        xMin : xMin,
-        xMax : xMax,
-        yMin : yMin,
-        yMax : yMax
-        }
+    // return formatted min/max data as an object
+    return {
+    xMin : xMin,
+    xMax : xMax,
+    yMin : yMin,
+    yMax : yMax
     }
+}
 })();
